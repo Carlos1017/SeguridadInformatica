@@ -1,8 +1,17 @@
 {
-  "name": "login-sqli-demo",
+  "name": "seginfo",
   "version": "1.0.0",
-  "description": "Practica demostrativa de inyeccion SQL en login (Express + SQLite)",
-  "main": "server-vulnerable.js",
-  "scripts": { "start": "node server-vulnerable.js" },
-  "license": "MIT"
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0",
+    "sqlite3": "^6.0.1"
+  }
 }

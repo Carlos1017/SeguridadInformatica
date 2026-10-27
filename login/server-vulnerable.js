@@ -1,52 +1,41 @@
-// server-vulnerable.js  —  VERSIÓN DE PRUEBA (VULNERABLE a inyección SQL)
-// Práctica escolar demostrativa. Login que arma el SQL concatenando la
-// entrada del usuario: todo carácter de control SQL del atacante pasa a
-// formar parte de la sentencia ejecutada.
-const http = require('node:http');
-const fs   = require('node:fs');
-const path = require('node:path');
-const db   = require('./db');
 
-const PORT = 3000;
+// npm init -v
+// npm install express sqlite3
+// node server-vulnerable.js
 
-function send(res, code, obj) {
-  res.writeHead(code, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(obj));
-}
+const express = require("express");
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-const server = http.createServer((req, res) => {
-  // Servir el formulario
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
-    const html = fs.readFileSync(path.join(__dirname, 'index.html'));
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    return res.end(html);
-  }
+const app = express();
+app.use(express.json());
+app.use(express.static(__dirname));
 
-  // Endpoint de login VULNERABLE
-  if (req.method === 'POST' && req.url === '/login-vulnerable') {
-    let body = '';
-    req.on('data', c => (body += c));
-    req.on('end', () => {
-      const { username, password } = JSON.parse(body || '{}');
+const db = new sqlite3.Database(":memory:");
 
-      // ❌ VULNERABILIDAD: la entrada del usuario se concatena dentro del SQL
-      const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
 
-      console.log('Query ejecutada:', query);
-
-      try {
-        const row = db.prepare(query).get();      // se interpreta como código SQL
-        if (row) return send(res, 200, { ok: true, user: row.username });
-        return send(res, 401, { ok: false, message: 'Credenciales inválidas' });
-      } catch (err) {
-        // ❌ FUGA DE INFORMACIÓN: el error crudo del motor se devuelve al cliente
-        return send(res, 500, { error: err.message });
-      }
-    });
-    return;
-  }
-
-  send(res, 404, { error: 'No encontrado' });
+db.serialize(() => {
+  db.run(
+    "CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)",
+  );
+  db.run("INSERT INTO users (username, password) VALUES ('admin', 'admin')");
+  db.run("INSERT INTO users (username, password) VALUES ('juan', '1234')");
 });
 
-server.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+
+app.post("/login-vulnerable", (req, res) => { 
+  const { username, password } = req.body;
+
+
+  const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+
+  console.log("Query ejecutada:", query); 
+
+  db.get(query, (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (row) return res.json({ ok: true, user: row.username });
+    res.status(401).json({ ok: false, message: "Credenciales inválidas" });
+  });
+});
+
+app.listen(3000, () => console.log("http://localhost:3000"));
