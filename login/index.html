@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login SQLi Demo</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#f4f4f4; margin:0; padding:40px; }
+    .card { background:#fff; max-width:360px; margin:0 auto; padding:22px 26px;
+            border:1px solid #ccc; border-radius:6px; }
+    h1 { font-size:20px; margin:0 0 16px; }
+    input { display:block; width:100%; box-sizing:border-box; margin-bottom:10px;
+            padding:8px; border:1px solid #bbb; border-radius:3px; font-size:14px; }
+    button { width:100%; padding:9px; background:#e7e7e7; border:1px solid #adadad;
+             border-radius:3px; cursor:pointer; font-size:14px; }
+    pre { background:#f7f7f7; border:1px solid #e0e0e0; padding:10px; margin-top:16px;
+          font-size:13px; white-space:pre-wrap; word-break:break-word; min-height:20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login (demo SQLi)</h1>
+    <input id="u" placeholder="Usuario">
+    <input id="p" type="text" placeholder="Contraseña">
+    <button onclick="entrar()">Entrar</button>
+    <pre id="out"></pre>
+  </div>
+  <script>
+    async function entrar() {
+      const r = await fetch('/login-vulnerable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u.value, password: p.value })
+      });
+      document.getElementById('out').textContent = JSON.stringify(await r.json(), null, 2);
+    }
+  </script>
+</body>
+</html>

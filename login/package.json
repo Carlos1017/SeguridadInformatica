@@ -1,0 +1,8 @@
+{
+  "name": "login-sqli-demo",
+  "version": "1.0.0",
+  "description": "Practica demostrativa de inyeccion SQL en login (Express + SQLite)",
+  "main": "server-vulnerable.js",
+  "scripts": { "start": "node server-vulnerable.js" },
+  "license": "MIT"
+}
